@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+# set -euo pipefail
 
 # Variables
 DIRECTORY_TO_BACKUP="$1"
