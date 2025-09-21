@@ -2,3 +2,4 @@
 - Log Archive Tool Task from https://roadmap.sh/projects/log-archive-tool
 - Nginx Log Analyser Task from https://roadmap.sh/projects/nginx-log-analyser
 - GitHub Pages Deployment Task from https://roadmap.sh/projects/github-actions-deployment-workflow
+- SSH Remote Server Setup Task from https://roadmap.sh/projects/ssh-remote-server-setup
