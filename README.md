@@ -1,3 +1,4 @@
-Server Performance Stats Task from https://roadmap.sh/projects/server-stats
-Log Archive Tool Task from https://roadmap.sh/projects/log-archive-tool
-Nginx Log Analyser Task from https://roadmap.sh/projects/nginx-log-analyser
+- Server Performance Stats Task from https://roadmap.sh/projects/server-stats
+- Log Archive Tool Task from https://roadmap.sh/projects/log-archive-tool
+- Nginx Log Analyser Task from https://roadmap.sh/projects/nginx-log-analyser
+- GitHub Pages Deployment Task from https://roadmap.sh/projects/github-actions-deployment-workflow
