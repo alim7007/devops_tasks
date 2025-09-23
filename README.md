@@ -3,3 +3,4 @@
 - Nginx Log Analyser Task from https://roadmap.sh/projects/nginx-log-analyser
 - GitHub Pages Deployment Task from https://roadmap.sh/projects/github-actions-deployment-workflow
 - SSH Remote Server Setup Task from https://roadmap.sh/projects/ssh-remote-server-setup
+- Static Site Server Task fromhttps://roadmap.sh/projects/static-site-server

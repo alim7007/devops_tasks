@@ -79,3 +79,8 @@ Confirms it’s running after your edits.
 ```bash
 sudo systemctl status fail2ban
 ```
+
+```bash
+sudo systemctl stop fail2ban
+sudo fail2ban-client stop
+```

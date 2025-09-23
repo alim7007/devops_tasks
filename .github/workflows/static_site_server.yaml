@@ -1,0 +1,25 @@
+name: Deploy via Rsync
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "static_site_server/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+
+      - name: Deploy with rsync
+        run: |
+          rsync -avz --delete ./static_site_server/ \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/my_domain/
