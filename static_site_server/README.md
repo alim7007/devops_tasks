@@ -182,3 +182,17 @@ cat ~/.ssh/github-actions.pub >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 chmod 700 ~/.ssh
 
+for no cache
+```bash
+sudo nano /etc/nginx/sites-available/my_domain
+#update
+location / {
+    add_header Cache-Control "no-cache, no-store, must-revalidate";
+    add_header Pragma "no-cache";
+    add_header Expires 0;
+    try_files $uri $uri/ =404;
+}
+
+sudo nginx -t && sudo systemctl reload nginx
+```
+

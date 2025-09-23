@@ -1,6 +1,21 @@
-- Server Performance Stats Task from https://roadmap.sh/projects/server-stats
-- Log Archive Tool Task from https://roadmap.sh/projects/log-archive-tool
-- Nginx Log Analyser Task from https://roadmap.sh/projects/nginx-log-analyser
-- GitHub Pages Deployment Task from https://roadmap.sh/projects/github-actions-deployment-workflow
-- SSH Remote Server Setup Task from https://roadmap.sh/projects/ssh-remote-server-setup
-- Static Site Server Task fromhttps://roadmap.sh/projects/static-site-server
+- 1. Server Performance Stats Task from https://roadmap.sh/projects/server-stats
+- 2. Log Archive Tool Task from https://roadmap.sh/projects/log-archive-tool
+- 3. Nginx Log Analyser Task from https://roadmap.sh/projects/nginx-log-analyser
+- 4. GitHub Pages Deployment Task from https://roadmap.sh/projects/github-actions-deployment-workflow
+- 5. SSH Remote Server Setup Task from https://roadmap.sh/projects/ssh-remote-server-setup
+- 6. Static Site Server Task from https://roadmap.sh/projects/static-site-server
+- 7. Basic DNS Setup from https://roadmap.sh/projects/basic-dns  "SKIPPED: TODO AFTER DOMAIN PURCHASE"
+- 8. GitHub User Activity from https://roadmap.sh/projects/github-user-activity
+- 9. Dummy Systemd Service from
+- 10. Basic Dockerfile from
+- 11. EC2 Instance from
+- 12. Configuration Management from
+- 13. IaC on DigitalOcean from
+- 14. Node.js Service Deployment from
+- 15. Dockerized Service from
+- 16. Multi-Container Application from
+- 17. Automated DB Backups from
+- 18. Blue-Green Deployment from
+- 19. Prometheus and Grafana from
+- 20. Multi-Service Application from
+- 21. Service Discovery from

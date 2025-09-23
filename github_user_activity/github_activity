@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+# Usage: ./repo_stats.sh <owner> <repo>
+
+# -e stop on error, 
+# -u stop if using undefined variables, 
+# -o pipefail stop if a command in a pipe fails.
+set -euo pipefail
+
+OWNER="$1"
+REPO="$2"
+BRANCH_FOR_CREATED_AT="${3:-}"
+
+per=5
+
+
+usage() {
+  echo "Usage: github-activity <owner> <repo> [branch_for_created_at]"
+  echo
+  echo "Arguments:"
+  echo "  <owner>                GitHub username or org (required)"
+  echo "  <repo>                 Repository name (required)"
+  echo "  [branch_for_created_at] Optional branch to approximate creation date"
+  echo
+  echo "Examples:"
+  echo "  github-activity torvalds linux"
+  echo "  github-activity kamranahmedse developer-roadmap main"
+  exit 0
+}
+
+# --- HELP FLAG ---
+if [[ "${OWNER}" == "-h" || "${OWNER}" == "--help" ]]; then
+  usage
+fi
+
+# --- REQUIRED ARGS CHECK ---
+if [[ -z "${OWNER}" || -z "${REPO}" ]]; then
+  echo "Error: missing arguments."
+  usage
+fi
+
+# --- API CALL HELPER (with error handling) ---
+gh_api() {
+  local url="$1"
+  resp=$(curl -s -w "%{http_code}" "$url")
+  body="${resp::-3}"
+  code="${resp: -3}"
+  if [[ "$code" != "200" ]]; then
+    echo "Error: API request failed ($url) [HTTP $code]" >&2
+    exit 1
+  fi
+  echo "$body"
+}
+
+
+# --- COMMITS ---
+BRANCH="$(curl -s "https://api.github.com/repos/$OWNER/$REPO" | jq -r '.default_branch')"
+commits_total=0
+page=1
+while :; do
+  n=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/commits?sha=$BRANCH&per_page=$per&page=$page" | jq 'length')
+  (( n==0 )) && break
+  commits_total=$(( commits_total+n ))
+  page=$((page+1))
+done
+
+# --- ISSUES ---
+issues_all=0
+issues_only=0
+page=1
+while :; do
+  resp=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/issues?state=all&per_page=$per&page=$page")
+  n_all=$(echo "$resp" | jq 'length')
+  (( n_all==0 )) && break
+  n_only=$(echo "$resp" | jq '[.[] | select(has("pull_request")|not)] | length')
+  issues_all=$((issues_all+n_all))
+  issues_only=$((issues_only+n_only))
+  page=$((page+1))
+done
+
+# --- COMMENTS PER ISSUE ---
+page=1
+comments_out=""
+while :; do
+  resp=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/issues?state=all&per_page=$per&page=$page")
+  n=$(echo "$resp" | jq 'length')
+  (( n==0 )) && break
+  comments_out+=$(echo "$resp" | jq -r '.[] | "\(.number): \(.comments) comments — \(.title)"'; echo)
+  page=$((page+1))
+done
+
+# --- LAST CREATED REPO FOR OWNER ---
+last_repo=$(curl -s "https://api.github.com/users/$OWNER/repos?sort=created&direction=desc&per_page=1" \
+  | jq -r '.[0] | "\(.name) at \(.created_at)"')
+
+# --- BRANCH LIST ---
+page=1
+branches=""
+while :; do
+  resp=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/branches?per_page=100&page=$page")
+  n=$(echo "$resp" | jq 'length')
+  (( n==0 )) && break
+  branches+=$(echo "$resp" | jq -r '.[].name'; echo)
+  page=$((page+1))
+done
+
+# --- BRANCH CREATED AT (best-effort via oldest commit) ---
+branch_created=""
+if [[ -n "$BRANCH_FOR_CREATED_AT" ]]; then
+  page=1
+  while :; do
+    resp=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/commits?sha=$BRANCH_FOR_CREATED_AT&per_page=100&page=$page")
+    n=$(echo "$resp" | jq 'length')
+    (( n==0 )) && break
+    last_date=$(echo "$resp" | jq -r '.[-1].commit.author.date')
+    branch_created="$last_date"
+    page=$((page+1))
+  done
+fi
+
+# --- DELETED BRANCHES ---
+deleted_branches=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/events?per_page=100" \
+  | jq -r '[.[] | select(.type=="DeleteEvent" and .payload.ref_type=="branch")] | .[].payload.ref')
+
+last_deleted_branch=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/events?per_page=100" \
+  | jq -r '[.[] | select(.type=="DeleteEvent" and .payload.ref_type=="branch")][0].payload.ref // empty')
+
+# --- OUTPUT ---
+echo "Pushed $commits_total commits to $OWNER/$REPO@$BRANCH"
+echo
+echo "=======###############======="
+echo "Total issues (including PRs): $issues_all"
+echo "Total issues (excluding PRs): $issues_only"
+echo
+echo "=======###############======="
+echo "Comments per issue:"
+echo "$comments_out"
+echo
+echo "=======###############======="
+echo "Last created repo for $OWNER: $last_repo"
+echo
+echo "=======###############======="
+echo "Branches:"
+echo "$branches"
+if [[ -n "$BRANCH_FOR_CREATED_AT" ]]; then
+  echo "Approx created-at for branch $BRANCH_FOR_CREATED_AT: ${branch_created:-unknown}"
+fi
+echo
+echo "=======###############======="
+echo "Deleted branches (if any):"
+echo "${deleted_branches:-None found}"
+echo
+echo "=======###############======="
+echo "Last deleted branch: ${last_deleted_branch:-None found}"
