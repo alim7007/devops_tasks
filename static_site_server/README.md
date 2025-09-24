@@ -1,4 +1,4 @@
-- Static Site Server Task from: https://roadmap.sh/projects/static-site-server
+- 6. Static Site Server Task from: https://roadmap.sh/projects/static-site-server
 
 ```bash
 # add new user

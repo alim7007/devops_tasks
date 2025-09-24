@@ -1,4 +1,4 @@
-- 8. GitHub User Activity from https://roadmap.sh/projects/github-user-activity
+- GitHub User Activity from https://roadmap.sh/projects/github-user-activity
 
 ```bash
 chmod +x github_activity.sh
