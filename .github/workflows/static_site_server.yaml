@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "static_site_server/**"
+      - "dummy_systemd_service/**"
 
 jobs:
   deploy:
@@ -13,13 +14,35 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # Figure out which paths changed
+      - name: Paths filter
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            static:
+              - 'static_site_server/**'
+            service:
+              - 'dummy_systemd_service/**'
+
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
 
-      - name: Deploy with rsync
+      # Deploy static site if it changed
+      - name: Deploy static_site_server via rsync
+        if: steps.changes.outputs.static == 'true'
         run: |
-          rsync -avz --delete ./static_site_server/ \
-          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/my_domain/
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=yes" \
+            ./static_site_server/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/my_domain/
+
+      # Deploy dummy_systemd_service if it changed
+      - name: Deploy dummy_systemd_service via rsync
+        if: steps.changes.outputs.service == 'true'
+        run: |
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=yes" \
+            ./dummy_systemd_service/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/dummy_systemd_service

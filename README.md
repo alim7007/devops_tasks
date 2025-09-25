@@ -6,8 +6,8 @@ Devops Projects
 - ✅ 5. SSH Remote Server Setup Task from https://roadmap.sh/projects/ssh-remote-server-setup
 - ✅ 6. Static Site Server Task from https://roadmap.sh/projects/static-site-server
 - ⏭️ 7. Basic DNS Setup Task from https://roadmap.sh/projects/basic-dns  "SKIPPED: TODO LATER"
-- 8. Simple Monitoring Task from https://roadmap.sh/projects/simple-monitoring-dashboard
-- 9. Dummy Systemd Service Task from https://roadmap.sh/projects/dummy-systemd-service
+- ✅ 8. Simple Monitoring Task from https://roadmap.sh/projects/simple-monitoring-dashboard
+- ✅ 9. Dummy Systemd Service Task from https://roadmap.sh/projects/dummy-systemd-service
 - 10. Basic Dockerfile Task from https://roadmap.sh/projects/basic-dockerfile
 - 11. EC2 Instance Task from https://roadmap.sh/projects/ec2-instance
 - 12. Configuration Management Task from https://roadmap.sh/projects/configuration-management
