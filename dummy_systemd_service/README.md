@@ -19,7 +19,11 @@ WantedBy=multi-user.target
 sudo systemctl daemon-reload
 sudo systemctl enable --now dummy.service
 systemctl status dummy.service
-journalctl -u dummy.service -e --no-pager
 ```
 
 Update the script in Git → push → CI/CD will rsync the new dummy.sh to the server and restart the service automatically.
+
+```bash
+sudo systemctl stop dummy
+sudo systemctl disable dummy
+```
