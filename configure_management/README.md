@@ -1,111 +1,250 @@
 - ✅ 12. Configuration Management Task from https://roadmap.sh/projects/configuration-management
 
-Installing Ansible
-<!-- sudo apt-add-repository ppa:ansible/ansible -->
+Use **Ansible** to configure a Linux server with roles:
+
+* `base` — updates + utilities + firewall + fail2ban
+* `nginx` — install & configure NGINX
+* `app` — upload a static site tar and unpack it
+* `ssh` — add a public key to the server
+
+---
+
+## 0) Installing Ansible (system install)
+
+If you’re installing Ansible on Ubuntu the “old school” way:
+
+```bash
 sudo apt update
 sudo apt install ansible
+```
 
+> In this repo we also provide a **project-local toolchain** (preferred):
+> `make bootstrap` → creates `.venv/` and installs pinned Ansible + vendored Galaxy deps.
 
+---
 
-for passphrase to disturb
+## 1) SSH key (avoid passphrase prompts)
+
+```bash
 # start agent (macOS usually has one already)
 eval "$(ssh-agent -s)"
-# load your key once per login session (will prompt for passphrase) 
-ssh-add ~/.ssh/id_ed25519 
+
+# load your key once per login session (will prompt for passphrase)
+ssh-add ~/.ssh/id_ed25519
+
 # verify it's loaded
 ssh-add -l
+```
 
-and for first time need to login with ssh for fingerprint
+**First time to a host:** SSH once so the fingerprint is known (host key gets written to `~/.ssh/known_hosts`).
 
+---
 
+## 2) Galaxy collections
 
+Your original command (keep it if your file is named exactly this):
 
+```bash
 ansible-galaxy collection install -r ansible/collections/requirements.yml
+```
 
+In this repo we use:
 
+```bash
+make bootstrap
+# (internally runs: ansible-galaxy collection install -r ansible/requirements/collections.yaml)
+```
 
+---
 
+## 3) Playbook notes (short + practical)
 
-playbook notes:
-- hosts: all
-A play that targets every host from your inventory. You could use a group like servers instead.
+* `- hosts: all`
+  A play that targets every host from your inventory. You could use a group like `servers` instead.
 
-still need better explanations
-gather_facts: useful for conditionals (e.g., service name differences).
-gather_facts: true — lets you branch with when: (e.g., only run apt on Debian).
+* `gather_facts: true`
+  Useful for conditionals (e.g., service name differences). Lets you branch with `when:` (e.g., only run `apt` on Debian).
 
-become: true
-Run tasks with sudo/root on the remote hosts. (Your SSH user may be non-root; Ansible will
-update_cache: true ≈ apt-get update.
+* `become: true`
+  Run tasks with sudo/root on the remote hosts. (Your SSH user may be non-root; Ansible will escalate.)
 
-Ansible modules (like apt, user, lineinfile) check current state and only act if needed.
+* `update_cache: true`
+  ≈ `apt-get update` (refresh package metadata).
 
+* **Idempotence**
+  Ansible modules (`apt`, `user`, `lineinfile`, …) check current state and only act **if needed**.
 
-Ansible Galaxy = a public repository of community-maintained roles and collections.
+---
 
-Website: https://galaxy.ansible.com
-Example: geerlingguy.nginx role:
+## 4) Ansible Galaxy (what it is)
 
+Ansible Galaxy = public repository of community-maintained **roles** and **collections**.
+Website: [https://galaxy.ansible.com](https://galaxy.ansible.com)
+
+**Example** (using a role like `geerlingguy.nginx`):
+
+```yaml
 - hosts: webservers
   roles:
     - geerlingguy.nginx
+```
 
+That one line will install NGINX, configure it, manage the service, etc.
 
-That one line will install nginx, configure it, manage the service, etc.
-All the details are already written inside the role.
+**Best practice today:** use **FQCN** (fully qualified collection name), e.g. `ansible.builtin.service`.
+Reason: avoids ambiguity if you install third-party collections that also ship a `service` module.
 
-Best practice today = use FQCN (ansible.builtin.systemd).
-Reason: avoids ambiguity if you install third-party collections that also have a systemd module.
+* `ansible.builtin.service` → works everywhere; on systemd machines it calls systemd **indirectly**.
+* `ansible.builtin.systemd` → talks to `systemctl` **directly** and exposes systemd-only features.
 
+Example:
 
-ansible.builtin.service
-if the machine uses systemd, then service ends up calling systemd anyway — but indirectly.
-
-
-ansible.builtin.systemd:
-It calls systemctl commands directly and exposes systemd-only features.
-
-example
+```yaml
 - name: Restart nginx with systemd
-  ansible.builtin.systemd: or ansible.builtin.service:
+  ansible.builtin.systemd:
     name: nginx
     state: restarted
+# (or use ansible.builtin.service with state: restarted)
+```
 
-
-
-/etc/sudoers breaks → sudo stops working fully.
-visudo edits safely, checks syntax before saving.
-Ansible makes temp file, applies your changes.
-Runs visudo -cf tempfile to confirm validity.
-If OK, replaces file; if not, aborts.
-
-
-dry-run
- ansible-playbook ansible/playbooks/setup.yaml --check
-
-
- requirements/roles.yml (optional Galaxy roles)
 ---
-roles: []
 
+## 5) Editing sudoers safely
 
-You’re implementing base/nginx/app/ssh yourself, so this can stay empty.
-(If later you add third-party roles, pin them here and vendor them.)
+`/etc/sudoers` breaks → sudo stops working.
+`visudo` edits safely and checks syntax before saving.
 
+What Ansible does in our playbook:
+
+* writes to `/etc/sudoers.d/USERNAME` (safer than editing the main file)
+* validates with `visudo -cf %s` before applying
+
+---
+
+## 6) Running things
+
+### Using **Make** (recommended)
+
+```bash
+# set up pinned toolchain + vendored deps (one time per clone)
+make bootstrap
+
+# dry-run after initial converge (preview only)
+make check LIMIT=server2
+
+# apply everything to server2
+make apply LIMIT=server2
+
+# run only one role
+make tags TAG=nginx LIMIT=server2
+make tags TAG=app   LIMIT=server2
+```
+
+### Plain Ansible equivalents
+
+```bash
 # Dry-run roles for server2 only
-ansible-playbook ansible/playbooks/setup.yml --limit server2 --check --diff
+ansible-playbook ansible/playbooks/setup.yaml --limit server2 --check --diff
 
 # Apply roles to server2 only
-ansible-playbook ansible/playbooks/setup.yml --limit server2
+ansible-playbook ansible/playbooks/setup.yaml --limit server2
 
 # Apply only the nginx role on server2
-ansible-playbook ansible/playbooks/setup.yml --limit server2 --tags nginx
+ansible-playbook ansible/playbooks/setup.yaml --limit server2 --tags nginx
 
 # Apply only the app role on server2
-ansible-playbook ansible/playbooks/setup.yml --limit server2 --tags app
+ansible-playbook ansible/playbooks/setup.yaml --limit server2 --tags app
+```
 
+> **Note on `--check`:** it’s a **best-effort preview**. Package installs don’t happen in check mode; don’t expect it to behave like Terraform **plan** on a totally fresh box.
 
+---
 
-make venv
-make bootstrap
-source .venv/bin/activate
+## 7) Optional roles file
+
+`requirements/roles.yml` (optional Galaxy roles)
+
+```yaml
+---
+roles: []
+```
+
+You’re implementing `base/nginx/app/ssh` yourself, so this can stay empty.
+(If later you add third-party roles, pin them here and vendor them.)
+
+---
+
+## 8) NGINX + App specifics (crucial)
+
+* Open firewall for HTTP (and later HTTPS):
+
+```bash
+sudo ufw allow "Nginx HTTP"
+# sudo ufw allow "Nginx Full"   # 80 + 443
+```
+
+* Disable Ubuntu’s packaged default site (to avoid duplicate `default_server`):
+
+```bash
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo systemctl reload nginx
+```
+
+* Our app role **flattens** `website.tar.gz` into the web root with:
+
+```yaml
+extra_opts: ['--strip-components=1']
+```
+
+So `index.html` ends up at `/var/www/html/index.html` (no nested folder).
+
+---
+
+## 9) Quick verification (copy/paste)
+
+```bash
+# reachability + sudo
+ansible server2 -m ping
+ansible server2 -b -m command -a "whoami"          # expect: root
+
+# nginx
+ansible server2 -m command -a "nginx -t"
+ansible server2 -m command -a "systemctl is-active nginx"
+ansible server2 -m uri -a "url=http://<SERVER2_IP> status_code=200"
+
+# app content
+ansible server2 -m shell -a "test -f /var/www/html/index.html && echo OK || echo MISSING"
+
+# firewall
+ansible server2 -m command -a "ufw status verbose"
+
+# fail2ban
+ansible server2 -m command -a "systemctl is-active fail2ban"
+ansible server2 -b -m command -a "fail2ban-client status"
+```
+
+---
+
+## 10) Handy one-liners
+
+```bash
+# Syntax check only (fast)
+ansible-playbook ansible/playbooks/setup.yaml --syntax-check
+
+# See what will run / available tags
+ansible-playbook ansible/playbooks/setup.yaml --list-tasks
+ansible-playbook ansible/playbooks/setup.yaml --list-tags
+```
+
+---
+
+## 11) Notes for later (CI/CD)
+
+* Keep using the **project-local venv** (no global clutter).
+* In CI, run the same `make bootstrap && make check/apply` with a self-hosted runner or a bastion that can reach your servers.
+
+---
+
+############
+"make check" is not like "terraform plan"
+############
