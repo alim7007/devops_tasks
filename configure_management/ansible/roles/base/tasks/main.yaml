@@ -1,0 +1,34 @@
+---
+- name: Update apt cache (Debian/Ubuntu)
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Ensure common packages are installed
+  ansible.builtin.package:
+    name: "{{ common_packages }}"
+    state: present
+
+- name: Allow SSH through UFW (before enabling, so you don't lock yourself out)
+  community.general.ufw:
+    rule: allow
+    name: OpenSSH
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Enable UFW and set default deny
+  community.general.ufw:
+    state: enabled
+    default: deny
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Gather installed package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+# Minimal fail2ban enablement (sshd jail is usually default on Ubuntu)
+- name: Ensure fail2ban service is enabled and running (if installed)
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true

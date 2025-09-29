@@ -1,4 +1,4 @@
-- 8. Simple Monitoring Task from https://roadmap.sh/projects/simple-monitoring-dashboard
+- ✅ 8. Simple Monitoring Task from https://roadmap.sh/projects/simple-monitoring-dashboard
 
 ## Installation
 

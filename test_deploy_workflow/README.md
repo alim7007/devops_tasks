@@ -1,1 +1,1 @@
-- 4. GitHub Pages Deployment Task from https://roadmap.sh/projects/github-actions-deployment-workflow
+- ✅ 4. GitHub Pages Deployment Task from https://roadmap.sh/projects/github-actions-deployment-workflow

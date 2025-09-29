@@ -1,0 +1,5 @@
+.venv/
+__pycache__/
+*.retry
+vendor
+# keep vendor deps in repo for reproducibility (do NOT ignore them)

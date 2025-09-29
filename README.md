@@ -9,8 +9,8 @@ Devops Projects
 - ✅ 8. Simple Monitoring Task from https://roadmap.sh/projects/simple-monitoring-dashboard
 - ✅ 9. Dummy Systemd Service Task from https://roadmap.sh/projects/dummy-systemd-service
 - ✅ 10. Basic Dockerfile Task from https://roadmap.sh/projects/basic-dockerfile
-- 11. EC2 Instance Task from https://roadmap.sh/projects/ec2-instance
-- 12. Configuration Management Task from https://roadmap.sh/projects/configuration-management
+- ⏭️ 11. EC2 Instance Task from https://roadmap.sh/projects/ec2-instance "SKIPPED: TODO LATER"
+- ✅ 12. Configuration Management Task from https://roadmap.sh/projects/configuration-management
 - 13. IaC on DigitalOcean Task from https://roadmap.sh/projects/iac-digitalocean
 - 14. Node.js Service Deployment Task from https://roadmap.sh/projects/nodejs-service-deployment
 - 15. Dockerized Service Task from https://roadmap.sh/projects/dockerized-service-deployment

@@ -1,0 +1,12 @@
+---
+- name: Ensure user {{ ssh_user }} exists (no-op if already there)
+  ansible.builtin.user:
+    name: "{{ ssh_user }}"
+    state: present
+  when: ssh_user != "root"
+
+- name: Install authorized key for {{ ssh_user }}
+  ansible.posix.authorized_key:
+    user: "{{ ssh_user }}"
+    state: present
+    key: "{{ lookup('file', ssh_pubkey_src) }}"

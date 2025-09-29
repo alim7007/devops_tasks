@@ -1,0 +1,14 @@
+---
+- name: Configure server end-to-end
+  hosts: servers
+  become: true
+  gather_facts: true
+
+  vars_files:
+    - ../group_vars/all.yaml
+    
+  roles:
+    - { role: base,  tags: ["base"] }
+    - { role: nginx, tags: ["nginx"] }
+    - { role: app,   tags: ["app"] }
+    - { role: ssh,   tags: ["ssh"] }

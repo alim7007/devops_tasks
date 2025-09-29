@@ -1,4 +1,4 @@
-- 9. Dummy Systemd Service Task from https://roadmap.sh/projects/dummy-systemd-service
+- ✅ 9. Dummy Systemd Service Task from https://roadmap.sh/projects/dummy-systemd-service
 
 ## Create service file
 ```bash

@@ -1,0 +1,21 @@
+ansible_python_interpreter: /usr/bin/python3
+
+# Base role
+common_packages:
+  - sudo
+  - curl
+  - vim
+  - git
+  - ufw
+  - unzip
+  - htop
+  - fail2ban
+
+# SSH role
+ssh_user: "alim7007"
+ssh_pubkey_src: "{{ lookup('env','HOME') + '/.ssh/digital_ocean.pub' }}"
+
+# Nginx role
+nginx_server_name: "_"
+nginx_root: "/var/www/html"
+nginx_index: "index.html index.htm"

@@ -1,1 +1,1 @@
-- 2. Log Archive Tool Task from https://roadmap.sh/projects/log-archive-tool
+- ✅ 2. Log Archive Tool Task from https://roadmap.sh/projects/log-archive-tool

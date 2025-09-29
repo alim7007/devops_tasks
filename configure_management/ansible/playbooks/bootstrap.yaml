@@ -1,0 +1,79 @@
+---
+- hosts: server2
+  become: true
+  gather_facts: true
+
+  vars:
+    created_username: alim7007
+    ssh_pubkey_path: "{{ lookup('env','HOME') + '/.ssh/digital_ocean.pub' }}"
+    # service name differs across distros; this picks 'ssh' for Debian/Ubuntu, 'sshd' otherwise
+    ssh_service_name: "{{ 'ssh' if ansible_facts['os_family'] == 'Debian' else 'sshd' }}"
+
+  pre_tasks:
+    - name: Ensure apt cache is fresh (Debian/Ubuntu)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_facts['os_family'] == 'Debian'
+
+  tasks:
+    - name: Install base packages (Debian/Ubuntu)
+      ansible.builtin.apt:
+        name:
+          - sudo
+          - curl
+          - vim
+          - git
+          - ufw
+        state: present
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Create user with sudo group
+      ansible.builtin.user:
+        name: "{{ created_username }}"
+        state: present
+        groups: sudo
+        append: true
+        create_home: true
+
+    - name: Add SSH key for the new user
+      ansible.posix.authorized_key:
+        user: "{{ created_username }}"
+        state: present
+        manage_dir: true
+        key: "{{ lookup('file', ssh_pubkey_path) }}"
+
+    - name: Allow passwordless sudo only for this user (safer)
+      ansible.builtin.copy:
+        dest: "/etc/sudoers.d/{{ created_username }}"
+        content: "{{ created_username }} ALL=(ALL) NOPASSWD: ALL\n"
+        owner: root
+        group: root
+        mode: '0440'
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: Allow SSH through UFW before enabling
+      community.general.ufw:
+        rule: allow
+        name: OpenSSH
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Enable UFW (deny incoming by default)
+      community.general.ufw:
+        state: enabled
+        default: deny
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: "Harden SSH: root login via password disabled (keys only)"
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin prohibit-password'
+        backup: true
+      notify: Restart sshd
+
+  handlers:
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: "{{ ssh_service_name }}"
+        state: restarted
