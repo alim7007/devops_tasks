@@ -3,3 +3,15 @@ __pycache__/
 *.retry
 vendor
 # keep vendor deps in repo for reproducibility (do NOT ignore them)
+
+# Terraform noise & secrets
+**/.terraform/
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+terraform.tfstate
+terraform.tfstate.backup
+terraform.log
+
+# Local logs
+*.log
