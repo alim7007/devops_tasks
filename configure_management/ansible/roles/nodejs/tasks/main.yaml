@@ -1,4 +1,4 @@
-# roles/nodejs/tasks/main.yml
+# roles/nodejs/tasks/main.yaml
 - name: Install Node.js repository
   ansible.builtin.shell: curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
   

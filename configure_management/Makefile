@@ -78,7 +78,7 @@ ping:
 	$(ANSIBLE) $(GROUP) -m ping -i $(INV)
 
 nodejs:
-	$(ANSIBLE_PLAYBOOK) $(CURDIR)/ansible/playbooks/node_service.yml --tags nodejs --limit $(LIMIT) -i $(INV)
+	$(ANSIBLE_PLAYBOOK) $(CURDIR)/ansible/playbooks/node_service.yaml --tags nodejs --limit $(LIMIT) -i $(INV)
 
 deploy:
-	$(ANSIBLE_PLAYBOOK) $(CURDIR)/ansible/playbooks/node_service.yml --tags nginx,app --limit $(LIMIT) -i $(INV)
+	$(ANSIBLE_PLAYBOOK) $(CURDIR)/ansible/playbooks/node_service.yaml --tags nginx,app --limit $(LIMIT) -i $(INV)

@@ -1,4 +1,4 @@
-# ansible/playbooks/node_service.yml
+# ansible/playbooks/node_service.yaml
 ---
 - name: Deploy Node.js service
   hosts: webservers

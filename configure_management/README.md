@@ -45,7 +45,7 @@ ssh-add -l
 Your original command (keep it if your file is named exactly this):
 
 ```bash
-ansible-galaxy collection install -r ansible/collections/requirements.yml
+ansible-galaxy collection install -r ansible/collections/requirements.yaml
 ```
 
 In this repo we use:
@@ -162,7 +162,7 @@ ansible-playbook ansible/playbooks/setup.yaml --limit server2 --tags app
 
 ## 7) Optional roles file
 
-`requirements/roles.yml` (optional Galaxy roles)
+`requirements/roles.yaml` (optional Galaxy roles)
 
 ```yaml
 ---
