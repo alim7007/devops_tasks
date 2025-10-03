@@ -1,0 +1,10 @@
+# ansible/playbooks/node_service.yml
+---
+- name: Deploy Node.js service
+  hosts: webservers
+  become: true
+  
+  roles:
+    - { role: nodejs, tags: ["nodejs"] }
+    - { role: nginx, tags: ["nginx"] }
+    - { role: node_app, tags: ["app"] }

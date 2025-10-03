@@ -60,3 +60,25 @@ clean:
 
 clean-all: clean
 	rm -rf ansible/vendor
+
+# ---- New targets ----
+
+INV ?= $(CURDIR)/ansible/inventory/hosts.ini
+GROUP ?= webservers
+LIMIT ?= web1
+
+# Quick inventory sanity checks
+inventory-list:
+	$(ANSIBLE)-inventory -i $(INV) --list
+
+inventory-graph:
+	$(ANSIBLE)-inventory -i $(INV) --graph
+
+ping:
+	$(ANSIBLE) $(GROUP) -m ping -i $(INV)
+
+nodejs:
+	$(ANSIBLE_PLAYBOOK) $(CURDIR)/ansible/playbooks/node_service.yml --tags nodejs --limit $(LIMIT) -i $(INV)
+
+deploy:
+	$(ANSIBLE_PLAYBOOK) $(CURDIR)/ansible/playbooks/node_service.yml --tags nginx,app --limit $(LIMIT) -i $(INV)

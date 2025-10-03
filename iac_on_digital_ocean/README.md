@@ -2,8 +2,7 @@
 
 Architecture Diagram
 
-![Architecture Diagram](architecture.png)
-
+[<img src="architecture.png" alt="Diagram" width="400">](architecture.png)
 
 ## Prerequisites
 

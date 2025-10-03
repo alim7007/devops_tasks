@@ -27,7 +27,7 @@ variable "ip_range" {
 variable "droplet_count" {
   type    = number
   description = "How many web servers to create"
-  default = 2
+  default = 1
 }
 
 variable "image" {
@@ -48,42 +48,9 @@ variable "ssh_key" {
   default = "alim_mac" # DO > Settings > Security > SSH Keys
 }
 
-# variable "subdomain" {
-#   type = string
-# }
-
-# variable "domain_name" {
-#   type = string
-# }
-
-# Managed Postgres
-variable "db_count" {
-  type    = number
-  description = "Managed DB node count"
-  default = 1
-}
-
-variable "database_size" {
-  type    = string
-  description = "Managed DB size slug"
-  default = "db-s-1vcpu-1gb"
-}
-
-variable "bastion_size" {
-  type    = string
-  description = "Managed DB size slug"
-  default = "s-1vcpu-1gb"
-}
-
-variable "db_region" {
-  type    = string
-  description = "DigitalOcean region"
-  default = "ams3"
-}
-
-# Bastion SSH allowlist (CIDRs). for own ip and do_cicd private ip
+# dont know do i need it for cicd or not
 variable "allowed_ssh_cidrs" {
   type        = list(string)
   description = "CIDRs allowed to SSH into bastion (use /32 for your IP)"
-  default     = ["95.0.73.247/32", "192.168.22.7/32"]
+  default     = ["95.0.73.247/32"]
 }
