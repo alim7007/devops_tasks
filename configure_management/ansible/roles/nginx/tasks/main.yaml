@@ -31,9 +31,9 @@
     path: /etc/nginx/sites-enabled/default
     state: absent
 
-- name: Deploy default server block (conf.d)
+- name: Deploy server block based on host group
   ansible.builtin.template:
-    src: default.conf.j2
+    src: "{{ 'node.conf.j2' if inventory_hostname in groups['webservers'] else 'default.conf.j2' }}"
     dest: /etc/nginx/conf.d/default.conf
     owner: root
     group: root
@@ -45,13 +45,3 @@
     name: nginx
     state: started
     enabled: true
-
-- name: Deploy node app server block (conf.d)
-  ansible.builtin.template:
-    src: node.conf.j2
-    dest: /etc/nginx/conf.d/node.conf
-    owner: root
-    group: root
-    mode: '0644'
-  notify: restart nginx
-  when: "'webservers' in group_names"  # Only on webservers group

@@ -7,7 +7,6 @@ resource "digitalocean_droplet" "cicd" {
   vpc_uuid = data.digitalocean_vpc.main.id
   tags     = ["${var.name}-cicd-runner"]
 
-  # dont know do i need it for cicd or not
   ssh_keys = [data.digitalocean_ssh_key.main.id]
 
   lifecycle {
