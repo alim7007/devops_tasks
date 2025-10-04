@@ -3,6 +3,8 @@ name: Build and Deploy Todo API
 on:
   push:
     branches: [main]
+    paths:
+      - 'multi_container_application/**'
   workflow_dispatch:
 
 env:
@@ -53,6 +55,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "multi_container_application/docker-compose.yaml,multi_container_application/nginx.conf"
+          target: "~/todo-app"
+          strip_components: 0
+
       - name: Deploy to remote server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -60,116 +72,22 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Create project directory
-            mkdir -p ~/todo-app
             cd ~/todo-app
-            
-            # Login to GitHub Container Registry
+
+            # Login to GHCR
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
-            
-            # Stop and remove existing containers
-            docker-compose down || true
-            
+
             # Pull latest image
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            
-            # Create docker-compose.yml
-            cat > docker-compose.yml << 'EOF'
-            version: '3.8'
-            services:
-              mongodb:
-                image: mongo:7-jammy
-                container_name: todo-mongodb
-                restart: unless-stopped
-                environment:
-                  - MONGO_INITDB_DATABASE=todos
-                volumes:
-                  - mongodb_data:/data/db
-                networks:
-                  - todo-network
-                healthcheck:
-                  test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-                  interval: 10s
-                  timeout: 5s
-                  retries: 5
-              
-              api:
-                image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-                container_name: todo-api
-                restart: unless-stopped
-                ports:
-                  - "3000:3000"
-                environment:
-                  - PORT=3000
-                  - MONGODB_URI=mongodb://mongodb:27017/todos
-                depends_on:
-                  mongodb:
-                    condition: service_healthy
-                networks:
-                  - todo-network
-              
-              nginx:
-                image: nginx:alpine
-                container_name: todo-nginx
-                restart: unless-stopped
-                ports:
-                  - "80:80"
-                volumes:
-                  - ./nginx.conf:/etc/nginx/nginx.conf:ro
-                depends_on:
-                  - api
-                networks:
-                  - todo-network
-            
-            volumes:
-              mongodb_data:
-                driver: local
-            
-            networks:
-              todo-network:
-                driver: bridge
-            EOF
-            
-            # Create nginx.conf
-            cat > nginx.conf << 'EOF'
-            events {
-                worker_connections 1024;
-            }
-            
-            http {
-                upstream api {
-                    server api:3000;
-                }
-            
-                server {
-                    listen 80;
-                    server_name _;
-            
-                    client_max_body_size 10M;
-            
-                    location / {
-                        proxy_pass http://api;
-                        proxy_http_version 1.1;
-                        proxy_set_header Upgrade $http_upgrade;
-                        proxy_set_header Connection 'upgrade';
-                        proxy_set_header Host $host;
-                        proxy_set_header X-Real-IP $remote_addr;
-                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                        proxy_set_header X-Forwarded-Proto $scheme;
-                        proxy_cache_bypass $http_upgrade;
-                    }
-            
-                    location /health {
-                        access_log off;
-                        return 200 "healthy\n";
-                        add_header Content-Type text/plain;
-                    }
-                }
-            }
-            EOF
-            
-            # Start containers
-            docker-compose up -d
-            
+
+            # Update image reference in compose file
+            export IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+            # Stop old containers
+            docker-compose -f docker-compose.prod.yml down
+
+            # Start new containers
+            docker-compose -f docker-compose.prod.yml up -d
+
             # Clean up old images
             docker image prune -af
