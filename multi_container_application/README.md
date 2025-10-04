@@ -212,7 +212,7 @@ server {
     
     location / {
         proxy_pass http://api:3000;
-        # Headers for proper proxying 
+        # Headers for proper proxying
     }
 }
 ```

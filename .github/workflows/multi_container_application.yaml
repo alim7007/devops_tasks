@@ -84,10 +84,10 @@ jobs:
             export IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
             # Stop old containers
-            docker-compose -f docker-compose.prod.yml down
+            docker-compose -f docker-compose.yaml down
 
             # Start new containers
-            docker-compose -f docker-compose.prod.yml up -d
+            docker-compose -f docker-compose.yaml up -d
 
             # Clean up old images
             docker image prune -af
