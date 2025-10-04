@@ -35,7 +35,7 @@ function requireBasicAuth(req, res, next) {
     res.set("WWW-Authenticate", 'Basic realm="Restricted", charset="UTF-8"');
     return res
       .status(401)
-      .json({ error: "Unauthorized: invalid username or password." });
+      .json({ error: "Unauthorized: invalid username or password" });
   }
 
   next();
