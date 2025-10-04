@@ -72,6 +72,11 @@ resource "digitalocean_firewall" "web" {
     protocol         = "icmp"  # ping from VPC
     source_addresses = [digitalocean_vpc.web.ip_range]
   }
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "3000"
+    source_addresses = ["192.168.22.0/24"]  # Only from VPC
+  }
 
   # Outbound within VPC
   outbound_rule {

@@ -1,0 +1,23 @@
+name: Deploy Node.js Service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'nodejs_service_deployment/node-app/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Update code on web servers
+        working-directory: configure_management
+        run: |
+          make deploy LIMIT=web1
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: False

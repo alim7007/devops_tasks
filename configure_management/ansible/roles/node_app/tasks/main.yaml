@@ -1,4 +1,4 @@
-# roles/node_app/tasks/main.yml
+# roles/node_app/tasks/main.yaml
 - name: Clone repo
   ansible.builtin.git:
     repo: 'https://github.com/alim7007/devops_tasks.git'
