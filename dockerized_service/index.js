@@ -47,7 +47,7 @@ app.get("/secret", requireBasicAuth, (_req, res) => {
 });
 
 app.use((req, res) => {
-  res.status(404).json({ error: "Not found" });
+  res.status(404).json({ error: "Not found." });
 });
 
 app.listen(PORT, HOST, () => {
