@@ -13,7 +13,7 @@ Devops Projects
 - ✅ 12. Configuration Management Task from https://roadmap.sh/projects/configuration-management
 - ✅ 13. IaC on DigitalOcean Task from https://roadmap.sh/projects/iac-digitalocean
 - ✅ 14. Node.js Service Deployment Task from https://roadmap.sh/projects/nodejs-service-deployment
-- 15. Dockerized Service Task from https://roadmap.sh/projects/dockerized-service-deployment
+- ✅ 15. Dockerized Service Task from https://roadmap.sh/projects/dockerized-service-deployment
 - 16. Multi-Container Application Task from https://roadmap.sh/projects/multi-container-service
 - 17. Automated DB Backups Task from https://roadmap.sh/projects/automated-backups
 - 18. Bastion Host Task from https://roadmap.sh/projects/bastion-host
