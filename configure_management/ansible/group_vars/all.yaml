@@ -1,3 +1,4 @@
+# invetory/group_vars/all.yaml is a symlink to ../group_vars/all.yaml
 ansible_python_interpreter: /usr/bin/python3
 
 # Base role
