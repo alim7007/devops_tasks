@@ -20,7 +20,7 @@ services:
 
   # Node.js API
   api:
-    build: .
+    image: ${IMAGE_NAME:-ghcr.io/alim7007/devops_tasks:latest}
     container_name: todo-api
     restart: unless-stopped
     ports:
