@@ -34,25 +34,26 @@ jobs:
             TEMP_SCRIPT="/tmp/backup.sh"
             PERMANENT_SCRIPT="/usr/local/bin/mongodb-backup.sh"
             
-            # Check if script exists in /usr/local/bin/
+            # Check if script needs updating
             if [ -f "${PERMANENT_SCRIPT}" ]; then
-              echo "✓ Found existing script at ${PERMANENT_SCRIPT}"
-              SCRIPT_TO_RUN="${PERMANENT_SCRIPT}"
+              if ! cmp -s "${TEMP_SCRIPT}" "${PERMANENT_SCRIPT}"; then
+                echo "Script has changes, updating..."
+                sudo cp "${TEMP_SCRIPT}" "${PERMANENT_SCRIPT}"
+                sudo chmod +x "${PERMANENT_SCRIPT}"
+                echo "✓ Script updated"
+              else
+                echo "✓ Script is up to date"
+              fi
             else
-              echo "✗ Script not found at ${PERMANENT_SCRIPT}"
-              echo "Installing script from repository..."
-              
-              # Copy from temp to permanent location
+              echo "Installing script for first time..."
               sudo cp "${TEMP_SCRIPT}" "${PERMANENT_SCRIPT}"
               sudo chmod +x "${PERMANENT_SCRIPT}"
-              
-              echo "✓ Script installed to ${PERMANENT_SCRIPT}"
-              SCRIPT_TO_RUN="${PERMANENT_SCRIPT}"
+              echo "✓ Script installed"
             fi
             
             # Run the backup script
             echo "Running backup script..."
-            ${SCRIPT_TO_RUN}
+            sudo "${PERMANENT_SCRIPT}"
             
             # Check exit code
             if [ $? -eq 0 ]; then
@@ -62,12 +63,12 @@ jobs:
               exit 1
             fi
 
-      - name: Notify on failure
-        if: failure()
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo "❌ Backup failed at $(date)" >> /var/log/mongodb-backup-failures.log
+      # - name: Notify on failure
+      #   if: failure()
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.SERVER_HOST }}
+      #     username: ${{ secrets.SERVER_USER }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     script: |
+      #       echo "Backup failed at $(date)" >> /var/log/mongodb-backup-failures.log
