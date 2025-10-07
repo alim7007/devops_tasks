@@ -1,0 +1,52 @@
+name: Automated DB Backups
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "multi_container_application/docker-compose.yaml,multi_container_application/nginx.conf"
+          target: "~/todo-app"
+          strip_components: 0
+
+      - name: Deploy to remote server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/todo-app/multi_container_application
+
+            # Login to GHCR
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+            # Pull latest image
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+            # Update image reference in compose file
+            export IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+            # Stop old containers
+            docker-compose -f docker-compose.yaml down
+
+            # Start new containers
+            docker-compose -f docker-compose.yaml up -d
+
+            # Clean up old images
+            docker image prune -af
