@@ -32,3 +32,13 @@ aws-cli/2.31.8 Python/3.13.7 Linux/6.14.0-23-generic exe/x86_64.ubuntu.25
 
 # На всякий случай убрать сломанный старый путь (если есть)
 sudo rm -f /usr/bin/aws
+
+
+Stop API container BEFORE restoring
+
+Why? The API is constantly reading/writing to MongoDB
+If you restore while API is running, you might get:
+
+Corrupted data (half-old, half-new)
+Connection errors
+Incomplete restore

@@ -6,47 +6,68 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-push:
+  backup-database:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Copy files to server
+      - name: Copy backup script to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "multi_container_application/docker-compose.yaml,multi_container_application/nginx.conf"
-          target: "~/todo-app"
-          strip_components: 0
+          source: "automated_db_backups/backup.sh"
+          target: "/tmp"
+          strip_components: 1
 
-      - name: Deploy to remote server
+      - name: Run backup on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/todo-app/multi_container_application
+            # Define script locations
+            TEMP_SCRIPT="/tmp/backup.sh"
+            PERMANENT_SCRIPT="/usr/local/bin/mongodb-backup.sh"
+            
+            # Check if script exists in /usr/local/bin/
+            if [ -f "${PERMANENT_SCRIPT}" ]; then
+              echo "✓ Found existing script at ${PERMANENT_SCRIPT}"
+              SCRIPT_TO_RUN="${PERMANENT_SCRIPT}"
+            else
+              echo "✗ Script not found at ${PERMANENT_SCRIPT}"
+              echo "Installing script from repository..."
+              
+              # Copy from temp to permanent location
+              sudo cp "${TEMP_SCRIPT}" "${PERMANENT_SCRIPT}"
+              sudo chmod +x "${PERMANENT_SCRIPT}"
+              
+              echo "✓ Script installed to ${PERMANENT_SCRIPT}"
+              SCRIPT_TO_RUN="${PERMANENT_SCRIPT}"
+            fi
+            
+            # Run the backup script
+            echo "Running backup script..."
+            ${SCRIPT_TO_RUN}
+            
+            # Check exit code
+            if [ $? -eq 0 ]; then
+              echo "✓ Backup completed successfully"
+            else
+              echo "✗ Backup failed"
+              exit 1
+            fi
 
-            # Login to GHCR
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
-
-            # Pull latest image
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-
-            # Update image reference in compose file
-            export IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-
-            # Stop old containers
-            docker-compose -f docker-compose.yaml down
-
-            # Start new containers
-            docker-compose -f docker-compose.yaml up -d
-
-            # Clean up old images
-            docker image prune -af
+      - name: Notify on failure
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "❌ Backup failed at $(date)" >> /var/log/mongodb-backup-failures.log
