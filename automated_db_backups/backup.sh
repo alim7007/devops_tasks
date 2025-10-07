@@ -61,7 +61,7 @@ main() {
     fi
     
     # Create backup directory
-    mkdir -p "${BACKUP_DIR}"
+    mkdir -p "${BACKUP_FOLDER}"
     
     # Step 1: Run mongodump inside container
     log "Running mongodump inside container..."
@@ -118,7 +118,7 @@ main() {
     
     # Step 6: Cleanup old local backups (keep last N)
     log "Cleaning up old local backups (keeping last ${MAX_LOCAL_BACKUPS})..."
-    cd "${BACKUP_DIR}"
+    cd "${BACKUP_FOLDER}"
     ls -t mongo-${DB_NAME}_*.tar.gz 2>/dev/null | tail -n +$((MAX_LOCAL_BACKUPS + 1)) | xargs -r rm -f
     REMAINING=$(ls -1 mongo-${DB_NAME}_*.tar.gz 2>/dev/null | wc -l)
     log "✓ Local backups: ${REMAINING} file(s)"
