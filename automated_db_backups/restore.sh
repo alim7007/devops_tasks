@@ -50,9 +50,9 @@ trap cleanup EXIT
 
 # List available backups from B2
 list_backups() {
-    log "Fetching available backups from B2..."
     aws s3 ls "s3://${S3_BUCKET}/${S3_PREFIX}/" \
         --endpoint-url "${S3_ENDPOINT}" \
+        2>/dev/null \
         | grep "mongo-${DB_NAME}_" \
         | awk '{print $4}' \
         | sort -r
@@ -166,7 +166,7 @@ restore_database() {
     log "Starting API container..."
     if docker start "${API_CONTAINER_NAME}"; then
         log "✓ API container started"
-        sleep 3  # Wait for container to be ready
+        sleep 3
         log "Waiting for API to be ready..."
         for i in {1..10}; do
             if docker exec "${API_CONTAINER_NAME}" wget -q --spider http://localhost:3000/ 2>/dev/null; then
@@ -213,18 +213,20 @@ main() {
         
         case $choice in
             1)
+                log "Fetching backups from B2..."
                 list_backups
                 ;;
             2)
                 list_local_backups
                 ;;
             3)
+                log "Fetching backups from B2..."
                 backups=($(list_backups))
                 if [ ${#backups[@]} -eq 0 ]; then
                     error "No backups found on B2"
                 else
                     latest="${backups[0]}"
-                    log "Latest backup: ${latest}"
+                    info "Latest backup: ${latest}"
                     download_backup "${latest}"
                 fi
                 ;;
@@ -238,12 +240,13 @@ main() {
                 restore_database "${backup_file}"
                 ;;
             5)
+                log "Fetching backups from B2..."
                 backups=($(list_backups))
                 if [ ${#backups[@]} -eq 0 ]; then
                     error "No backups found on B2"
                 else
                     latest="${backups[0]}"
-                    log "Latest backup: ${latest}"
+                    info "Latest backup: ${latest}"
                     local_file=$(download_backup "${latest}")
                     if [ $? -eq 0 ]; then
                         restore_database "${local_file}"
