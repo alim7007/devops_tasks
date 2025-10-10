@@ -2,6 +2,9 @@
 
 ## Overview
 
+For bastion itself look at dir iac_on_digital_ocean
+Here is just MFA docs, without implementation practice.
+
 This adds a second authentication factor after SSH key verification:
 1. User connects with SSH key (what you have)
 2. User enters 6-digit TOTP code from authenticator app (what you know)
@@ -462,22 +465,6 @@ This allows `github-runner` to authenticate with **only SSH key** when connectin
    - If automation needs access, use service accounts
    - Keep MFA for all human users
 
----
-
-## Recovery Checklist
-
-If you get locked out:
-
-- [ ] Try all 5 emergency scratch codes
-- [ ] Check phone time sync (Settings → Date & Time → Automatic)
-- [ ] Check server time: `ssh root@bastion "date"`
-- [ ] Use DigitalOcean console access
-- [ ] Temporarily disable MFA in `/etc/pam.d/sshd`
-- [ ] Reconfigure with `google-authenticator`
-- [ ] Re-enable MFA
-- [ ] Generate new emergency codes
-
----
 
 ## Summary
 

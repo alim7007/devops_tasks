@@ -17,7 +17,7 @@ Devops Projects
 - ✅ 16. Multi-Container Application Task from https://roadmap.sh/projects/multi-container-service
 - ✅ 17. Automated DB Backups Task from https://roadmap.sh/projects/automated-backups
 - ✅ 18. Bastion Host Task from https://roadmap.sh/projects/bastion-host
-- 19. File Integrity Checker Task from https://roadmap.sh/projects/file-integrity-checker
+- ✅ 19. File Integrity Checker Task from https://roadmap.sh/projects/file-integrity-checker
 - 20. Blue-Green Deployment Task from https://roadmap.sh/projects/blue-green-deployment
 - 21. Prometheus and Grafana Task from https://roadmap.sh/projects/monitoring
 - 22. Multi-Service Application Task from https://roadmap.sh/projects/multiservice-docker
